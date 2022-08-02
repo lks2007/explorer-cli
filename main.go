@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
-	"os"
-	"github.com/rivo/tview"
+    "log"
+    "os"
+    "github.com/rivo/tview"
     "github.com/gdamore/tcell"
 )
 
@@ -31,17 +31,17 @@ func addListFolder() []string {
 func main() {
     app := tview.NewApplication()
 
-    list := tview.NewList().ShowSecondaryText(false).SetMainTextColor(tcell.Color(tcell.Color100))
+    list := tview.NewList().ShowSecondaryText(false)
     list.Clear()
     for _, listValue := range addListFolder() {
         list.AddItem(listValue, "", 0, nil)
     }
 
-	flex := tview.NewFlex().
+    flex := tview.NewFlex().
     AddItem(list, 0, 1, false).
     AddItem(tview.NewBox().SetBorder(true), 0, 1, false)
 
-	if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
-		panic(err)
-	}
+    if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
+    	panic(err)
+    }
 }
