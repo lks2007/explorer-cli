@@ -1,32 +1,47 @@
 package main
 
 import (
-	"fmt"
-    "log"
-    "os"
-    "github.com/rivo/tview"
+	"log"
+	"os"
+	"github.com/rivo/tview"
+    "github.com/gdamore/tcell"
 )
 
-func main() {
-    box := tview.NewBox()
-	if err := tview.NewApplication().SetRoot(box, true).Run(); err != nil {
-		panic(err)
-	}
-
-    button := tview.NewButton("OK").SetSelectedFunc(func() {
-        println("ok")
-    })
-
-	files, err := os.ReadDir(".")
+func addListFolder() []string {
+    files, err := os.ReadDir(".")
     if err != nil {
         log.Fatal(err)
     }
 
+    element := []string{}
+
     for _, file := range files {
         if file.Type().IsDir() {
-            fmt.Println("\033[34m "+file.Name()+"/\033[37m")
+            join := " "+file.Name()+"/"
+            element = append(element, join)
         }else{
-            fmt.Println(file.Name())
+            element = append(element, file.Name())
         }
     }
+
+    return element
+}
+
+
+func main() {
+    app := tview.NewApplication()
+
+    list := tview.NewList().ShowSecondaryText(false).SetMainTextColor(tcell.Color(tcell.Color100))
+    list.Clear()
+    for _, listValue := range addListFolder() {
+        list.AddItem(listValue, "", 0, nil)
+    }
+
+	flex := tview.NewFlex().
+    AddItem(list, 0, 1, false).
+    AddItem(tview.NewBox().SetBorder(true), 0, 1, false)
+
+	if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
+		panic(err)
+	}
 }
