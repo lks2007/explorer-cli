@@ -7,12 +7,14 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func findIcon(name string) string{
+func findIcon(name string) (string){
     fileContent, _ := os.Open("langage.json")
 
     defer fileContent.Close()
@@ -39,13 +41,15 @@ func addListFolder() [][]string {
     for _, file := range files {
         if file.Type().IsDir() {
             join := " "+file.Name()+"/"
-            element = append(element, []string{join, "120, 20, 200"})
+            element = append(element, []string{join, "136, 175, 255"})
         }else{
             if findIcon(file.Name()) != "<nil>"{
-                element = append(element, []string{findIcon(file.Name())+" "+file.Name(), "190, 220, 10"})
+                data := strings.Split(findIcon(file.Name()), "|")
+
+                element = append(element, []string{data[0][1:]+" "+file.Name(), string([]rune(data[1])[:len(data[1])-1])})
             }else {
                 text := " "+file.Name()
-                secondColor := "50, 200, 255"
+                secondColor := "5, 191, 90"
                 element = append(element, []string{text, secondColor})
             }
         }
@@ -58,26 +62,27 @@ func addListFolder() [][]string {
 func main() {
     app := tview.NewApplication()
 
-    defaultColor := tcell.ColorBlue
-    
-    list := tview.NewList().ShowSecondaryText(false).SetMainTextColor(defaultColor)
-    list.Clear()
-    for _, listValue := range addListFolder() {
-        // rgb := strings.Split(listValue[1], ", ")
-        // fmt.Print(rgb)
-        
-        // rgbOneString, _ := strconv.ParseInt(rgb[0], 10, 32)
-        // rgbOne := int32(rgbOneString)
-        // rgbSecString, _ := strconv.ParseInt(rgb[1], 10, 32)
-        // rgbSec := int32(rgbSecString)
-        // rgbThiString, _ := strconv.ParseInt(rgb[2], 10, 32)
-        // rgbThi := int32(rgbThiString)
+    table := tview.NewTable().SetBorders(false)
+    table.Clear()
 
-        list.AddItem(listValue[0], "", 0, nil)
+    for index, listValue := range addListFolder() {
+        rgb := strings.Split(listValue[1], ", ")
+        
+        rgbOneString, _ := strconv.ParseInt(rgb[0], 10, 32)
+        rgbOne := int32(rgbOneString)
+        rgbSecString, _ := strconv.ParseInt(rgb[1], 10, 32)
+        rgbSec := int32(rgbSecString)
+        rgbThiString, _ := strconv.ParseInt(rgb[2], 10, 32)
+        rgbThi := int32(rgbThiString)
+
+        table.SetCell(index, 0,
+            tview.NewTableCell(listValue[0]).
+                SetTextColor(tcell.NewRGBColor(rgbOne, rgbSec, rgbThi)).
+                SetAlign(tview.AlignLeft))
     }
 
     flex := tview.NewFlex().
-    AddItem(list, 0, 1, false).
+    AddItem(table, 0, 1, false).
     AddItem(tview.NewBox().SetBorder(true), 0, 1, false)
 
     if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
