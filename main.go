@@ -40,17 +40,19 @@ func addListFolder() [][]string {
 
     for _, file := range files {
         if file.Type().IsDir() {
-            join := " "+file.Name()+"/"
-            element = append(element, []string{join, "136, 175, 255"})
+            join := file.Name()+"/"
+            icon := ""
+            element = append(element, []string{join, "136, 175, 255", icon})
         }else{
             if findIcon(file.Name()) != "<nil>"{
                 data := strings.Split(findIcon(file.Name()), "|")
 
-                element = append(element, []string{data[0][1:]+" "+file.Name(), string([]rune(data[1])[:len(data[1])-1])})
+                element = append(element, []string{file.Name(), string([]rune(data[1])[:len(data[1])-1]), data[0][1:]})
             }else {
-                text := " "+file.Name()
+                text := file.Name()
+                icon := ""
                 secondColor := "5, 191, 90"
-                element = append(element, []string{text, secondColor})
+                element = append(element, []string{text, secondColor, icon})
             }
         }
     }
@@ -63,7 +65,9 @@ func main() {
     app := tview.NewApplication()
 
     table := tview.NewTable().SetBorders(false)
+    table.SetBorderPadding(1,0,2,1)
     table.Clear()
+    table.InsertColumn(1)
 
     for index, listValue := range addListFolder() {
         rgb := strings.Split(listValue[1], ", ")
@@ -76,9 +80,14 @@ func main() {
         rgbThi := int32(rgbThiString)
 
         table.SetCell(index, 0,
-            tview.NewTableCell(listValue[0]).
+            tview.NewTableCell(listValue[2]).
                 SetTextColor(tcell.NewRGBColor(rgbOne, rgbSec, rgbThi)).
                 SetAlign(tview.AlignLeft))
+                
+                table.SetCell(index, 1,
+                    tview.NewTableCell(listValue[0]).
+                        SetTextColor(tcell.ColorWhite).
+                        SetAlign(tview.AlignLeft))
     }
 
     flex := tview.NewFlex().
