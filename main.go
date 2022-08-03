@@ -90,8 +90,25 @@ func main() {
                         SetAlign(tview.AlignLeft))
     }
 
+	table.SetSelectable(true, false)
+
+    table.Select(0, 0).SetFixed(1, 1).
+    SetSelectedFunc(func(row int, column int) {
+		// table.GetCell(row, 0).SetTextColor(tcell.ColorBlue)
+        // table.GetCell(row, 1).SetTextColor(tcell.ColorBlue)
+		table.SetSelectable(true, false)
+	}).
+    SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			app.Stop()
+		}
+		if key == tcell.KeyEnter {
+			table.SetSelectable(true, false)
+		}
+	})
+    
     flex := tview.NewFlex().
-    AddItem(table, 0, 1, false).
+    AddItem(table, 0, 1, true).
     AddItem(tview.NewBox().SetBorder(true), 0, 1, false)
 
     if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
