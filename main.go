@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -61,7 +63,36 @@ func addListFolder(dir string) [][]string {
 }
 
 
+func initialize() {
+    file, _ := os.Open("./initialize")
+    defer file.Close()
+
+    buf := make([]byte, 1024)
+    for {
+        n, err := file.Read(buf)
+	if err == io.EOF {
+		break
+	}
+    
+    fmt.Println(string(buf[:n]))
+
+    if string(buf[:n]) == "0"{
+        os.Chdir("./icons-in-terminal/")
+
+        arg := "./install-autodetect.sh"
+        exec.Command(arg)
+
+        os.Chdir("../")
+
+        file.WriteString("1")
+    }
+}
+}
+
 func main() {
+    initialize()
+
+
     app := tview.NewApplication()
 
     box := tview.NewTable().
@@ -101,7 +132,7 @@ func main() {
     table.Select(0, 0).SetFixed(1, 1).
     SetSelectedFunc(func(row int, column int) {
     	box.Clear()
-        table.GetCell(row, 1).Text
+        // table.GetCell(row, 1).Text
     	table.SetSelectable(true, false)
     }).
     SetDoneFunc(func(key tcell.Key) {
