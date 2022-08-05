@@ -109,7 +109,7 @@ func initialize() {
             os.Chdir("..")
 
             baseMv := "mv"
-            argMv0 := "../v1"
+            argMv0 := "../v1.0.3"
             argMv2 := "."
             cmdMv := exec.Command(baseMv, argMv0, argMv2)
             cmdMv.Output()
