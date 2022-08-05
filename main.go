@@ -79,7 +79,6 @@ func initialize() {
 
         if string(buf[:n]) == "0"{
             defer fileSecond.Close()
-            fmt.Println(string(buf[:n]))
 
             mode := int(0777)
             os.Mkdir("explorer", os.FileMode(mode))
