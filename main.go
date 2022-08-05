@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,8 +17,8 @@ import (
 	"github.com/rivo/tview"
 )
 
-func findIcon(name string) (string){
-    fileContent, _ := os.Open("langage.json")
+func findIcon(name string, dir string) (string){
+    fileContent, _ := os.Open(dir+"/"+"langage.json")
 
     defer fileContent.Close()
 
@@ -32,13 +33,14 @@ func findIcon(name string) (string){
     return result
 }
 
-func addListFolder(dir string) [][]string {
+func addListFolder(dir string, subdir string) [][]string {
     files, err := os.ReadDir(dir)
     if err != nil {
         log.Fatal(err)
     }
 
     element := [][]string{}
+    element = append(element, []string{"../", "136, 175, 255", ""})
 
     for _, file := range files {
         if file.Type().IsDir() {
@@ -46,8 +48,8 @@ func addListFolder(dir string) [][]string {
             icon := ""
             element = append(element, []string{join, "136, 175, 255", icon})
         }else{
-            if findIcon(file.Name()) != "<nil>"{
-                data := strings.Split(findIcon(file.Name()), "|")
+            if findIcon(file.Name(), subdir) != "<nil>"{
+                data := strings.Split(findIcon(file.Name(), subdir), "|")
 
                 element = append(element, []string{file.Name(), string([]rune(data[1])[:len(data[1])-1]), data[0][1:]})
             }else {
@@ -119,24 +121,8 @@ func initialize() {
     }
 }
 
-func main() {
-    initialize()
-
-
-    app := tview.NewApplication()
-
-    box := tview.NewTable().
-    SetBorders(true)
-    box.SetBorderPadding(1,0,2,1)
-    box.Clear()
-    box.InsertColumn(1)
-
-    table := tview.NewTable().SetBorders(false)
-    table.SetBorderPadding(1,0,2,1)
-    table.Clear()
-    table.InsertColumn(1)
-
-    for index, listValue := range addListFolder(".") {
+func showList(table *tview.Table, path string, dir string)  {
+    for index, listValue := range addListFolder(path, dir) {
         rgb := strings.Split(listValue[1], ", ")
         
         rgbOneString, _ := strconv.ParseInt(rgb[0], 10, 32)
@@ -148,22 +134,86 @@ func main() {
 
         table.SetCell(index, 0,
             tview.NewTableCell(listValue[2]).
-                SetTextColor(tcell.NewRGBColor(rgbOne, rgbSec, rgbThi)).
-                SetAlign(tview.AlignLeft))
+            SetTextColor(tcell.NewRGBColor(rgbOne, rgbSec, rgbThi)).
+            SetAlign(tview.AlignLeft))
                 
-                table.SetCell(index, 1,
-                    tview.NewTableCell(listValue[0]).
-                        SetTextColor(tcell.ColorWhite).
-                        SetAlign(tview.AlignLeft))
+        table.SetCell(index, 1,
+            tview.NewTableCell(listValue[0]).
+            SetTextColor(tcell.ColorWhite).
+            SetAlign(tview.AlignLeft))
     }
+}
+
+func addListCode(file string, dir string) map[int][]string{
+    f, _ := os.OpenFile(file, os.O_RDONLY, os.ModePerm)
+    defer f.Close()
+
+    sc := bufio.NewScanner(f)
+    i := 0
+    lines := make(map[int][]string) 
+    for sc.Scan() {
+        i+=1
+        lines[i] = append(lines[i], sc.Text(), fmt.Sprint(i))
+    }
+    return lines
+}
+
+func showCode(table *tview.Table, path string, dir string)  {
+    for index, value := range addListCode(path, dir){
+        table.SetCell(index, 0,
+            tview.NewTableCell(value[1]).
+            SetAlign(tview.AlignLeft).
+            SetTextColor(tcell.Color102))
+                
+        table.SetCell(index, 1,
+            tview.NewTableCell(value[0]).
+            SetTextColor(tcell.ColorWhite).
+            SetAlign(tview.AlignLeft))
+    }
+}
+
+func main() {
+    if os.Getenv("EXPLORE_ENV") != "development"{
+        initialize()
+    }
+
+    projectDir, _ := os.Getwd()
+
+    app := tview.NewApplication()
+
+    box := tview.NewTable()
+    box.SetBorder(true)
+    box.SetBorderPadding(0,0,2,0)
+    box.Clear()
+    box.InsertColumn(1)
+
+    table := tview.NewTable()
+    table.SetBorderPadding(1,0,2,0)
+    table.Clear()
+    table.InsertColumn(1)
+
+    showList(table, ".", projectDir)
 
     table.SetSelectable(true, false)
 
     table.Select(0, 0).SetFixed(1, 1).
     SetSelectedFunc(func(row int, column int) {
     	box.Clear()
-        // table.GetCell(row, 1).Text
-    	table.SetSelectable(true, false)
+        path := table.GetCell(row, 1).Text
+        fileInfo, _ := os.Stat(path)
+
+
+        box.SetSelectable(false, false)
+
+        if fileInfo.IsDir() {
+            table.Clear()
+            showList(table, path, projectDir)
+            os.Chdir(path[:len(path)-1])
+        } else {
+            showCode(box, path, projectDir)
+        }
+
+    	table.SetSelectable(false, false)
     }).
     SetDoneFunc(func(key tcell.Key) {
     	if key == tcell.KeyEscape {
@@ -177,6 +227,8 @@ func main() {
     flex := tview.NewFlex().
     AddItem(table, 0, 1, true).
     AddItem(box, 0, 1, false)
+    table.SetBackgroundColor(tcell.NewRGBColor(29, 31, 33))
+    box.SetBackgroundColor(tcell.NewRGBColor(29, 31, 33))
 
     if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
     	panic(err)
