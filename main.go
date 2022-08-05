@@ -94,16 +94,18 @@ func initialize() {
             cmdZip.Output()
         
             os.Chdir("icons-in-terminal-master")
-            arg := "./install-autodetect.sh"
-            cmdIcon := exec.Command(arg)
+            arg0 := "sh"
+            arg := "install-autodetect.sh"
+            cmdIcon := exec.Command(arg0, arg)
             cmdIcon.Output()
 
             os.Chdir("../")
 
             baseMv := "mv"
+            argMv0 := "../v0.2.1"
             argMv1 := "../initialize.txt"
             argMv2 := "."
-            cmdMv := exec.Command(baseMv, argMv1, argMv2)
+            cmdMv := exec.Command(baseMv, argMv0, argMv1, argMv2)
             cmdMv.Output()
 
             os.Remove("initialize.txt")
