@@ -106,15 +106,16 @@ func initialize() {
             cmdIcon := exec.Command(arg0, arg)
             cmdIcon.Output()
 
-            os.Chdir("../")
+            os.Chdir("..")
 
             baseMv := "mv"
-            argMv0 := "../v1.0.2"
-            argMv1 := "../initialize.txt"
+            argMv0 := "../v1"
             argMv2 := "."
-            cmdMv := exec.Command(baseMv, argMv0, argMv1, argMv2)
+            cmdMv := exec.Command(baseMv, argMv0, argMv2)
             cmdMv.Output()
 
+
+            
             os.Remove("initialize.txt")
             f, _ := os.Create("initialize.txt")
             f.WriteString("1")
