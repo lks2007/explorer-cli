@@ -110,13 +110,13 @@ func initialize() {
 
             
             baseHttpBin := "wget"
-            argHttpBin0 := "https://github.com/lks2007/explorer-go/releases/download/1.0.4/v1.0.4"
+            argHttpBin0 := "https://github.com/lks2007/explorer-go/releases/download/1.0.4/explorer_go-1.0.4"
             cmdBin := exec.Command(baseHttpBin, argHttpBin0)
             cmdBin.Output()
 
             os.Chdir("..")
             os.Remove("initialize.txt")
-            os.Remove("v1.0.4")
+            os.Remove("explorer_go-1.0.4")
 
             os.Chdir("explorer")
             f, _ := os.Create("initialize.txt")
