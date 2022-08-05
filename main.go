@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -62,29 +62,60 @@ func addListFolder(dir string) [][]string {
     return element
 }
 
-
 func initialize() {
-    file, _ := os.Open("./initialize")
-    defer file.Close()
+    if _, err := os.Stat("initialize.txt"); errors.Is(err, os.ErrNotExist) {
+        f, _ := os.Create("initialize.txt")
+        f.WriteString("0")
+        defer f.Close()
+    }
+
+    fileSecond, _ := os.Open("initialize.txt")
 
     buf := make([]byte, 1024)
     for {
-        n, err := file.Read(buf)
-	if err == io.EOF {
-		break
-	}
+        n, _ := fileSecond.Read(buf)
 
-    if string(buf[:n]) == "0"{
-        os.Chdir("./icons-in-terminal/")
+        if string(buf[:n]) == "0"{
+            defer fileSecond.Close()
 
-        arg := "./install-autodetect.sh"
-        exec.Command(arg)
+            mode := int(0777)
+            os.Mkdir("explorer", os.FileMode(mode))
+            os.Chdir("explorer")
 
-        os.Chdir("../")
+            baseHttp := "wget"
+            argHttp0 := "https://github.com/lks2007/icons-in-terminal/archive/refs/heads/master.zip"
+            cmd := exec.Command(baseHttp, argHttp0)
+            cmd.Output()
 
-        file.WriteString("1")
+            baseUnZip := "unzip"
+            argUnZip0 := "-q"
+            argUnZip1 := "master.zip"
+            cmdZip := exec.Command(baseUnZip, argUnZip0, argUnZip1)
+            cmdZip.Output()
+        
+            os.Chdir("icons-in-terminal-master")
+            arg := "./install-autodetect.sh"
+            cmdIcon := exec.Command(arg)
+            cmdIcon.Output()
+
+            os.Chdir("../")
+
+            baseMv := "mv"
+            argMv0 := "../v1"
+            argMv1 := "../initialize.txt"
+            argMv2 := "."
+            cmdMv := exec.Command(baseMv, argMv0, argMv1, argMv2)
+            cmdMv.Output()
+
+            os.Remove("initialize.txt")
+            f, _ := os.Create("initialize.txt")
+            f.WriteString("1")
+            defer f.Close()
+
+            break
+        }
+        break
     }
-}
 }
 
 func main() {
