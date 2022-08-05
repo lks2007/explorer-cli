@@ -73,8 +73,6 @@ func initialize() {
 	if err == io.EOF {
 		break
 	}
-    
-    fmt.Println(string(buf[:n]))
 
     if string(buf[:n]) == "0"{
         os.Chdir("./icons-in-terminal/")
