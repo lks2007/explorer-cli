@@ -30,8 +30,8 @@ func findIcon(name string) (string){
     return result
 }
 
-func addListFolder() [][]string {
-    files, err := os.ReadDir(".")
+func addListFolder(dir string) [][]string {
+    files, err := os.ReadDir(dir)
     if err != nil {
         log.Fatal(err)
     }
@@ -64,12 +64,18 @@ func addListFolder() [][]string {
 func main() {
     app := tview.NewApplication()
 
+    box := tview.NewTable().
+    SetBorders(true)
+    box.SetBorderPadding(1,0,2,1)
+    box.Clear()
+    box.InsertColumn(1)
+
     table := tview.NewTable().SetBorders(false)
     table.SetBorderPadding(1,0,2,1)
     table.Clear()
     table.InsertColumn(1)
 
-    for index, listValue := range addListFolder() {
+    for index, listValue := range addListFolder(".") {
         rgb := strings.Split(listValue[1], ", ")
         
         rgbOneString, _ := strconv.ParseInt(rgb[0], 10, 32)
@@ -94,8 +100,8 @@ func main() {
 
     table.Select(0, 0).SetFixed(1, 1).
     SetSelectedFunc(func(row int, column int) {
-    	// table.GetCell(row, 0).SetTextColor(tcell.ColorBlue)
-        // table.GetCell(row, 1).SetTextColor(tcell.ColorBlue)
+    	box.Clear()
+        table.GetCell(row, 1).Text
     	table.SetSelectable(true, false)
     }).
     SetDoneFunc(func(key tcell.Key) {
@@ -106,10 +112,10 @@ func main() {
     		table.SetSelectable(true, false)
     	}
     })
-    
+
     flex := tview.NewFlex().
     AddItem(table, 0, 1, true).
-    AddItem(tview.NewBox().SetBorder(true), 0, 1, false)
+    AddItem(box, 0, 1, false)
 
     if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run(); err != nil {
     	panic(err)
