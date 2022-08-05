@@ -89,6 +89,11 @@ func initialize() {
             cmd := exec.Command(baseHttp, argHttp0)
             cmd.Output()
 
+            baseHttpJson := "wget"
+            argHttpJson0 := "https://raw.githubusercontent.com/lks2007/explorer-go/main/langage.json"
+            cmdJson := exec.Command(baseHttpJson, argHttpJson0)
+            cmdJson.Output()
+
             baseUnZip := "unzip"
             argUnZip0 := "-q"
             argUnZip1 := "master.zip"
