@@ -79,6 +79,7 @@ func initialize() {
 
         if string(buf[:n]) == "0"{
             defer fileSecond.Close()
+            fmt.Println(string(buf[:n]))
 
             mode := int(0777)
             os.Mkdir("explorer", os.FileMode(mode))
@@ -104,7 +105,7 @@ func initialize() {
             os.Chdir("../")
 
             baseMv := "mv"
-            argMv0 := "../v0.2.1"
+            argMv0 := "../v1.0.1"
             argMv1 := "../initialize.txt"
             argMv2 := "."
             cmdMv := exec.Command(baseMv, argMv0, argMv1, argMv2)
