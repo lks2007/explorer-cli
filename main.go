@@ -30,6 +30,11 @@ func findIcon(name string, dir string) (string){
     contentType := filepath.Ext(name)
     
     result := fmt.Sprintf("%v", res[contentType])
+
+    if result == "<nil>"{
+        result = fmt.Sprintf("%v", res[name])
+    }
+
     return result
 }
 
@@ -54,8 +59,8 @@ func addListFolder(dir string, subdir string) [][]string {
                 element = append(element, []string{file.Name(), string([]rune(data[1])[:len(data[1])-1]), data[0][1:]})
             }else {
                 text := file.Name()
-                icon := ""
-                secondColor := "5, 191, 90"
+                icon := ""
+                secondColor := "214, 214, 214"
                 element = append(element, []string{text, secondColor, icon})
             }
         }
@@ -166,10 +171,13 @@ func addListCode(file string, dir string) map[int][]string{
 
 func showCode(table *tview.Table, path string, dir string)  {
     for index, value := range addListCode(path, dir){
-        table.SetCell(index, 0,
-            tview.NewTableCell(value[1]).
-            SetAlign(tview.AlignLeft).
-            SetTextColor(tcell.Color102))
+        cell := tview.NewTableCell(value[1]).
+        SetAlign(tview.AlignLeft).
+        SetTextColor(tcell.Color102)
+
+        cell.NotSelectable = true
+
+        table.SetCell(index, 0, cell)
                 
         table.SetCell(index, 1,
             tview.NewTableCell(value[0]).
@@ -192,6 +200,16 @@ func main() {
     box.SetBorderPadding(0,0,2,0)
     box.Clear()
     box.InsertColumn(1)
+    style := tcell.Style{}
+    style = style.Background(tcell.NewRGBColor(29, 31, 33))
+    style = style.Foreground(tcell.ColorWhite)
+    box.SetSelectedStyle(style)
+
+    box.SetDoneFunc(func(key tcell.Key) {
+        if key == tcell.KeyEscape {
+    		app.Stop()
+    	}
+    })
 
     table := tview.NewTable()
     table.SetBorderPadding(1,0,2,0)
@@ -209,7 +227,7 @@ func main() {
         fileInfo, _ := os.Stat(path)
 
 
-        box.SetSelectable(false, false)
+        box.SetSelectable(true, true)
 
         if fileInfo.IsDir() {
             table.Clear()
@@ -217,9 +235,9 @@ func main() {
             os.Chdir(path[:len(path)-1])
         } else {
             showCode(box, path, projectDir)
+            box.Select(0, 1)
         }
 
-    	table.SetSelectable(false, false)
     }).
     SetDoneFunc(func(key tcell.Key) {
     	if key == tcell.KeyEscape {
