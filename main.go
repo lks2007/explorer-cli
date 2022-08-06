@@ -171,13 +171,11 @@ func addListCode(file string, dir string) map[int][]string{
 
 func showCode(table *tview.Table, path string, dir string)  {
     for index, value := range addListCode(path, dir){
-        cell := tview.NewTableCell(value[1]).
+
+
+        table.SetCell(index, 0, tview.NewTableCell(value[1]).
         SetAlign(tview.AlignLeft).
-        SetTextColor(tcell.Color102)
-
-        cell.NotSelectable = true
-
-        table.SetCell(index, 0, cell)
+        SetTextColor(tcell.Color102).SetSelectable(false))
                 
         table.SetCell(index, 1,
             tview.NewTableCell(value[0]).
